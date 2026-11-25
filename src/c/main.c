@@ -1,5 +1,7 @@
 #include <pebble.h>
 
+#include "protocol.h"
+
 static Window *s_window;
 static TextLayer *s_text;
 
@@ -18,6 +20,9 @@ static void prv_unload(Window *window) {
 }
 
 int main(void) {
+  protocol_init();
+  protocol_request_routines();
+
   s_window = window_create();
   window_set_window_handlers(s_window, (WindowHandlers){
     .load = prv_load,

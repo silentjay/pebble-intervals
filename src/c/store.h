@@ -26,7 +26,7 @@ typedef struct {
 int store_encode_blob(const Routine *in, int count, uint8_t *out, size_t cap);
 int store_decode_blob(const uint8_t *in, size_t len, Routine *out, int max);
 
-#ifdef PEBBLE
+#ifndef HOST_TEST
 bool store_commit_blob(const uint8_t *blob, size_t len);
 int store_load_all(Routine *out, int max);
 #endif

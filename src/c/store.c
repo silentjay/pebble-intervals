@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#ifdef PEBBLE
+#ifndef HOST_TEST
 #include <pebble.h>
 #endif
 
@@ -96,7 +96,7 @@ int store_decode_blob(const uint8_t *in, size_t len, Routine *out, int max) {
   return count;
 }
 
-#ifdef PEBBLE
+#ifndef HOST_TEST
 
 #define STORE_KEY_COUNT 0x0001
 #define STORE_KEY_HEADER(rid) (0x0800 + (rid))
