@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const {
   packThreshold, fitRect, rleEncode, rleDecode, toHex, fromHex,
-} = require('../src/pkjs/config/convert.js');
+} = require('../src/pkjs/convert.js');
 
 test('packs a row with white as 1', () => {
   const gray = [0, 255, 0, 255, 0, 255, 0, 255];
@@ -46,7 +46,7 @@ test('hex round-trips', () => {
   assert.deepStrictEqual([...fromHex('00abff')], data);
 });
 
-const { encodeRoutineSet } = require('../src/pkjs/config/convert.js');
+const { encodeRoutineSet } = require('../src/pkjs/convert.js');
 
 test('encodes the shared C fixture byte for byte', () => {
   const blob = encodeRoutineSet([{
