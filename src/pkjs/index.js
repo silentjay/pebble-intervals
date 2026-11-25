@@ -5,8 +5,8 @@ var CONFIG_URL = 'https://example.com/pebble-intervals/';
 var ROUTINES_KEY = 'intervals.routines';
 var ART_KEY = 'intervals.art';
 var ROUTINE_CHUNK = 128;
-var ART_CHUNK = 672;
-var ART_BYTES = 12 * 112;
+var ART_CHUNK = 378;
+var ART_BYTES = 9 * 84;
 
 function createService(pebble, storage) {
   function read(key, fallback) {

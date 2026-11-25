@@ -12,7 +12,7 @@ const ROUTINES = [{
   ],
 }];
 
-const IMAGE = new Uint8Array(1344).fill(0xaa);
+const IMAGE = new Uint8Array(756).fill(0xaa);
 
 function artEntry(r, s, bytes) {
   return { r, s, data: Convert.toHex(Convert.rleEncode(bytes)) };
@@ -74,7 +74,7 @@ test('art is served in chunks that reassemble to the image', () => {
 
   assert.strictEqual(pebble.sent.length, 2);
   assert.deepStrictEqual([...concatenate(pebble.sent)], [...IMAGE]);
-  assert.strictEqual(pebble.sent[0].PayloadLen, 1344);
+  assert.strictEqual(pebble.sent[0].PayloadLen, 756);
 });
 
 test('a missing picture sends nothing', () => {

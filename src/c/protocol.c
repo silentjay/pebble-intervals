@@ -22,6 +22,7 @@ static uint32_t s_art_seen;
 
 static GBitmap *s_art[MAX_STEPS];
 static GBitmap *s_thumb[MAX_STEPS];
+static void (*s_commit_cb)(void);
 
 static void prv_send(uint8_t cmd, int routine_id, int step_index) {
   DictionaryIterator *out;
@@ -66,7 +67,7 @@ GBitmap *protocol_art(uint8_t step_index) {
   return step_index < MAX_STEPS ? s_art[step_index] : NULL;
 }
 
-// 2x2 majority downsample: 96x112 -> 48x56.
+// 2x2 majority downsample: 72x84 -> 36x42.
 GBitmap *protocol_thumb(uint8_t step_index) {
   if (step_index >= MAX_STEPS || !s_art[step_index]) return NULL;
   if (s_thumb[step_index]) return s_thumb[step_index];
@@ -144,8 +145,10 @@ static void prv_inbox(DictionaryIterator *iter, void *context) {
 
     uint32_t all = (s_blob_count == 32) ? 0xFFFFFFFFu : ((1u << s_blob_count) - 1);
     if ((s_blob_seen & all) == all && s_blob_len == s_blob_expected) {
-      store_commit_blob(s_blob, s_blob_len);
-      APP_LOG(APP_LOG_LEVEL_INFO, "routines: committed %d bytes", s_blob_len);
+      if (store_commit_blob(s_blob, s_blob_len)) {
+        APP_LOG(APP_LOG_LEVEL_INFO, "routines: committed %d bytes", s_blob_len);
+        if (s_commit_cb) s_commit_cb();
+      }
       s_blob_seen = 0;
       s_blob_len = 0;
     }
@@ -165,7 +168,7 @@ static void prv_inbox(DictionaryIterator *iter, void *context) {
     }
     if (count_t->value->uint8 != s_art_count || index_t->value->uint8 >= s_art_count) return;
 
-    size_t offset = index_t->value->uint8 * 672;  // ART_CHUNK in index.js
+    size_t offset = index_t->value->uint8 * ART_CHUNK_BYTES;
     if (offset + chunk_t->length > ART_BYTES) return;
     memcpy(s_art_buf + offset, chunk_t->value->data, chunk_t->length);
     s_art_seen |= 1u << index_t->value->uint8;
@@ -176,6 +179,10 @@ static void prv_inbox(DictionaryIterator *iter, void *context) {
       s_art_active = false;
     }
   }
+}
+
+void protocol_set_commit_callback(void (*cb)(void)) {
+  s_commit_cb = cb;
 }
 
 void protocol_init(void) {

@@ -85,11 +85,11 @@ and no build step, hosted at a URL and opened from the Pebble app's settings
 action. It:
 
 - edits routines and steps;
-- takes a picture from the Android photo picker, crops to 96×112 preserving
+- takes a picture from the Android photo picker, crops to 72×84 preserving
   aspect, thresholds to 1-bit with an adjustable cutoff, and shows an exact 1:1
   preview and the exact byte cost;
 - enforces two budgets: watch storage for routine definitions (≤ 3 KB) and
-  session art memory (≤ 20 KB), refusing saves that exceed them;
+  session art memory (≤ 12 KB), refusing saves that exceed them;
 - on save, hands the whole payload (routines + pictures) back to PebbleKit JS
   by navigating to `pebblejs://close#<encoded payload>`.
 
@@ -121,11 +121,11 @@ origin and its own `localStorage`. Its only exit is the close URL.
   the phone away.
 - **Pictures**: never stored on the watch. At session start the watch requests
   each picture for the selected routine; PebbleKit JS replies with packed 1-bit
-  rows (96×112, stride 12 bytes, MSB first, 1 = white, 0 = black); the watch
+  rows (72×84, stride 9 bytes, MSB first, 1 = white, 0 = black); the watch
   copies them into a 1-bit `GBitmap` and keeps it in RAM for the session.
-  The rest screen's thumbnail (48×56) is derived on the watch by 2×2 majority
+  The rest screen's thumbnail (36×42) is derived on the watch by 2×2 majority
   downsampling at sync time, so only one picture per step crosses the wire.
-- **Budgets**: 12 pictured steps per routine (12 × 1344 B ≈ 16 KB).
+- **Budgets**: 12 pictured steps per routine (12 × 756 B ≈ 9 KB).
 - **Fallbacks**: no phone at start → text-only session. Phone drops mid-sync →
   start with whatever arrived. Nothing about a failed transfer is persisted.
 
@@ -133,7 +133,7 @@ origin and its own `localStorage`. Its only exit is the close URL.
 
 - C SDK rather than Alloy: Alloy does not support diorite.
 - Pictures live in RAM, not storage, because 4 KB cannot hold them.
-- One picture per step at a fixed 96×112; the 48×56 rest thumbnail is derived on
+- One picture per step at a fixed 72×84; the 36×42 rest thumbnail is derived on
   the watch rather than sent, because the C SDK cannot scale bitmaps at draw
   time and a second payload would double the budget.
 - No compression for the phone→watch transfer (raw rows); RLE only inside the
