@@ -154,21 +154,23 @@ origin and its own `localStorage`. Its only exit is the close URL.
 - Where the config page is hosted.
 - Exact RLE framing inside the close URL.
 
-## Spike before building (unknowns that could change the plan)
+## Findings from the build
 
-1. Does the Rebble Android app's config webview allow `<input type="file">` and
-   a close URL with a ~10 KB payload? The `webviewclosed` → PebbleKit JS
-   `localStorage` path is documented; the file picker and payload size are not.
-   If the picker fails, the fallback is a serverless host plus a paste/upload.
-2. What is diorite's actual AppMessage inbox maximum, and how fast can ~16 KB of
-   picture data move? The 8 s deadline is set from this measurement.
-3. Confirm a `1Bit` `GBitmap` created with `gbitmap_create_blank()` accepts rows
-   memcpy'd into `gbitmap_get_data()` using `gbitmap_get_bytes_per_row()`.
+1. **Rebble webview file picker and close-URL size** — still unverified. The
+   `webviewclosed` → PebbleKit JS `localStorage` path is documented and the
+   payload stays around 10 KB (RLE + hex), but the Android file picker inside
+   the Rebble webview must be confirmed on the phone.
+2. **AppMessage limits** — the inbox is opened at
+   `app_message_inbox_size_maximum()`. Pictures travel as two 378-byte
+   messages; routine sets as 128-byte chunks. Transfer rate is still to be
+   measured on hardware; the 8 s deadline is the backstop.
+3. **1-bit `GBitmap`** — the SDK creates a blank 1-bit bitmap and exposes its
+   stride through `gbitmap_get_bytes_per_row()`, so raw packed rows are copied
+   straight in. Confirmed by reading the installed SDK headers; drawing still
+   needs the on-watch check.
 
-## Testing
+## Change from the original design
 
-- Watch: build for diorite and install over the developer connection; the state
-  machine is exercised by pausing, skipping and letting periods expire.
-- Phone: the converter and the routine-to-period expansion are pure functions,
-  checked with a small Node script (known input → expected packed bytes and
-  period list).
+Pictures are **72×84** (stride 9), not 96×112, and the rest thumbnail is
+36×42. At 96×112 the picture, phase label, step name and a 42 px countdown do
+not fit in 168 px. Art budget follows: 12 pictured steps ≈ 9 KB.
