@@ -71,7 +71,7 @@ static bool get_name(const uint8_t *in, size_t len, size_t *p, char *dst) {
 }
 
 int store_decode_blob(const uint8_t *in, size_t len, Routine *out, int max) {
-  Routine tmp[MAX_ROUTINES];
+  static Routine tmp[MAX_ROUTINES];
   size_t p = 0;
   uint8_t count;
 
@@ -126,15 +126,14 @@ bool store_commit_blob(const uint8_t *blob, size_t len) {
   if (n < 0) return false;
 
   int old = persist_exists(STORE_KEY_COUNT) ? persist_read_int(STORE_KEY_COUNT) : 0;
-  for (int i = n; i < old; i++) prv_delete_routine(i);
+  bool ok = true;
 
-  persist_write_int(STORE_KEY_COUNT, n);
   for (int i = 0; i < n; i++) {
     const Routine *r = &s_tmp[i];
     HeaderRecord h = {0};
     h.step_count = r->step_count;
     strncpy(h.name, r->name, NAME_MAX);
-    persist_write_data(STORE_KEY_HEADER(i), &h, sizeof h);
+    if (persist_write_data(STORE_KEY_HEADER(i), &h, sizeof h) < 0) ok = false;
 
     for (int s = 0; s < r->step_count; s++) {
       StepRecord sr = {0};
@@ -142,9 +141,16 @@ bool store_commit_blob(const uint8_t *blob, size_t len) {
       sr.work_s = r->steps[s].work_s;
       sr.rest_s = r->steps[s].rest_s;
       sr.flags = r->steps[s].flags;
-      persist_write_data(STORE_KEY_STEP(i, s), &sr, sizeof sr);
+      if (persist_write_data(STORE_KEY_STEP(i, s), &sr, sizeof sr) < 0) ok = false;
     }
   }
+  if (!ok) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "routines: write failed, keeping previous count");
+    return false;
+  }
+
+  for (int i = n; i < old; i++) prv_delete_routine(i);
+  persist_write_int(STORE_KEY_COUNT, n);
   return true;
 }
 

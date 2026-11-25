@@ -20,11 +20,11 @@ test('pads rows to whole bytes', () => {
   assert.strictEqual(out[0], 0xe0);
 });
 
-test('cover-crops a landscape source to 96x112', () => {
+test('cover-crops a landscape source to the target aspect', () => {
   assert.deepStrictEqual(fitRect(200, 100, 96, 112), { sx: 57, sy: 0, sw: 86, sh: 100 });
 });
 
-test('cover-crops a portrait source to 96x112', () => {
+test('cover-crops a portrait source to the target aspect', () => {
   assert.deepStrictEqual(fitRect(100, 200, 96, 112), { sx: 0, sy: 42, sw: 100, sh: 117 });
 });
 
@@ -61,10 +61,12 @@ test('encodes the shared C fixture byte for byte', () => {
 
 test('truncates an over-long name to 20 bytes at a code point boundary', () => {
   const blob = encodeRoutineSet([{
-    name: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    name: '€'.repeat(12),
     steps: [{ name: 'x', work_s: 1, rest_s: 0, has_art: false }],
   }]);
-  assert.strictEqual(blob[2], 20);
+  assert.strictEqual(blob[2], 18, 'backs off to the last whole code point');
+  const nameBytes = blob.slice(3, 21);
+  assert.strictEqual(new TextDecoder().decode(nameBytes), '€'.repeat(6));
 });
 
 test('refuses more than 8 routines or 15 steps', () => {

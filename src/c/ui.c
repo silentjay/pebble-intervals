@@ -217,7 +217,7 @@ static BitmapLayer *s_pic_layer;
 static Session s_session;
 static AppTimer *s_tick_timer;
 static AppTimer *s_exit_timer;
-static char s_time_buf[8];
+static char s_time_buf[10];
 
 static void prv_session_update(void) {
   uint32_t left = session_remaining_ms(&s_session, now_ms());
@@ -239,7 +239,7 @@ static void prv_session_update(void) {
   } else if (s_session.phase == PHASE_REST) {
     int next = s_session.step + 1;
     static char next_buf[32];
-    snprintf(next_buf, sizeof next_buf, "UP NEXT: %s",
+    snprintf(next_buf, sizeof next_buf, "NEXT: %s",
              next < s_active.step_count ? s_active.steps[next].name : "");
     text_layer_set_text(s_phase_text, "REST");
     text_layer_set_text(s_name_text, next_buf);
@@ -313,7 +313,7 @@ static void prv_session_load(Window *window) {
   text_layer_set_text_alignment(s_phase_text, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(s_phase_text));
 
-  s_name_text = text_layer_create(GRect(0, 14, bounds.size.w, 20));
+  s_name_text = text_layer_create(GRect(0, 16, bounds.size.w, 18));
   text_layer_set_font(s_name_text, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(s_name_text, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(s_name_text));
@@ -367,6 +367,7 @@ static void prv_session_begin(void) {
     prv_buzz(PHASE_DONE);
     s_exit_timer = app_timer_register(3000, prv_session_exit, NULL);
   } else {
+    prv_buzz(s_session.phase);  // confirms the start without looking
     s_tick_timer = app_timer_register(1000, prv_tick, NULL);
   }
 }

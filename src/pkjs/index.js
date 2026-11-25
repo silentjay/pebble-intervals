@@ -73,8 +73,11 @@ function createService(pebble, storage) {
     for (var n = 0; n < entries.length; n++) {
       var entry = entries[n];
       try {
-        var bytes = Convert.rleDecode(Convert.fromHex(entry.data), ART_BYTES);
-        if (bytes.length === ART_BYTES) art[entry.r + ':' + entry.s] = Array.from(bytes);
+        var raw = Convert.fromHex(entry.data);
+        var total = 0;
+        for (var j = 0; j + 1 < raw.length; j += 2) total += raw[j];
+        if (total !== ART_BYTES) throw new Error('bad run length');
+        art[entry.r + ':' + entry.s] = Array.from(Convert.rleDecode(raw, ART_BYTES));
       } catch (e) {
         // A broken picture is dropped; the routines still save.
       }

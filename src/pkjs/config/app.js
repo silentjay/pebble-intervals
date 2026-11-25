@@ -9,6 +9,7 @@ var MAX_BLOB = 3072;
 var STORE_KEY = 'intervals.builder';
 
 var state = { routines: [] };
+var grays = {};
 
 function load() {
   try {
@@ -138,7 +139,7 @@ function renderStep(routine, step, r, s) {
   var label = el('label', { text: 'Image' });
   slider.hidden = true;
 
-  var gray = null;
+  var gray = grays[r + ':' + s] || null;
 
   function refresh() {
     if (!step.art) return;
@@ -147,7 +148,13 @@ function renderStep(routine, step, r, s) {
 
   file.addEventListener('change', async function () {
     if (!file.files || !file.files[0]) return;
-    gray = await grayFromFile(file.files[0]);
+    try {
+      gray = await grayFromFile(file.files[0]);
+    } catch (e) {
+      showMessage('Could not read that image.', false);
+      return;
+    }
+    grays[r + ':' + s] = gray;
     step.art = packFromGray(gray, Number(slider.value));
     slider.hidden = false;
     persist();
@@ -227,7 +234,11 @@ function buildPayload() {
       var art = [];
       state.routines.forEach(function (routine, r) {
         routine.steps.forEach(function (step, s) {
-          if (step.art) art.push({ r: r, s: s, data: step.art });
+          if (step.art) {
+            // Stored raw for the preview; RLE for the close-URL payload.
+            var raw = Convert.fromHex(step.art);
+            art.push({ r: r, s: s, data: Convert.toHex(Convert.rleEncode(raw)) });
+          }
         });
       });
       return art;
@@ -239,17 +250,23 @@ function problem() {
   if (state.routines.length > MAX_ROUTINES) return 'Too many routines (max ' + MAX_ROUTINES + ').';
   var bad = null;
   state.routines.forEach(function (routine) {
-    if (routine.steps.length > MAX_STEPS) bad = 'Too many steps in ' + (routine.name || 'a routine') + ' (max ' + MAX_STEPS + ').';
+    var name = routine.name || 'a routine';
+    if (routine.steps.length > MAX_STEPS) bad = 'Too many steps in ' + name + ' (max ' + MAX_STEPS + ').';
+    if (!bad && routine.steps.length === 0) bad = 'Routine "' + name + '" has no steps.';
+
+    var pictures = 0;
     routine.steps.forEach(function (step) {
+      if (step.art) pictures++;
       if (!bad && !(step.work_s >= 1)) bad = 'Every step needs a work time of at least 1 second.';
+      if (!bad && !(step.rest_s >= 0 && step.rest_s <= 65535)) bad = 'Rest time must be between 0 and 65535 seconds.';
     });
+    if (!bad && pictures > MAX_ART) {
+      bad = 'Art budget exceeded: ' + pictures + '/' + MAX_ART + ' pictures in ' + name + '.';
+    }
   });
   if (bad) return bad;
 
   var payload = buildPayload();
-  if (payload.art.length > MAX_ART) {
-    return 'Art budget exceeded: ' + payload.art.length + '/' + MAX_ART + ' pictures.';
-  }
 
   var blob;
   try {
@@ -286,6 +303,10 @@ document.getElementById('add-routine').addEventListener('click', function () {
 });
 
 document.getElementById('save').addEventListener('click', function () {
+  if (state.routines.length === 0 &&
+      !confirm('Save an empty routine list? This removes every routine from the watch.')) {
+    return;
+  }
   var bad = problem();
   if (bad) {
     showMessage(bad, false);

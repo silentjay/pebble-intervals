@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { state, buildPayload, problem } = require('../src/pkjs/config/app.js');
+const Convert = require('../src/pkjs/convert.js');
 
 function routineWith(pictures, work = 30) {
   const steps = [];
@@ -14,7 +15,8 @@ test('payload carries routines with has_art and art entries', () => {
   state.routines = [{ name: 'Warm', steps: [{ name: 'Arm', work_s: 30, rest_s: 10, art: 'beef' }] }];
   const payload = buildPayload();
   assert.strictEqual(payload.routines[0].steps[0].has_art, true);
-  assert.deepStrictEqual(payload.art, [{ r: 0, s: 0, data: 'beef' }]);
+  assert.strictEqual(payload.art.length, 1);
+  assert.deepStrictEqual([...Convert.rleDecode(Convert.fromHex(payload.art[0].data), 2)], [0xbe, 0xef]);
 });
 
 test('a step without a picture reports has_art false', () => {
@@ -35,4 +37,19 @@ test('zero work time is refused', () => {
 test('a valid routine has no problem', () => {
   state.routines = [routineWith(2)];
   assert.strictEqual(problem(), null);
+});
+
+test('the art budget is per routine, not global', () => {
+  state.routines = [routineWith(12), routineWith(12)];
+  assert.strictEqual(problem(), null);
+});
+
+test('a routine with no steps is refused', () => {
+  state.routines = [{ name: 'Empty', steps: [] }];
+  assert.match(problem(), /has no steps/);
+});
+
+test('a negative rest time is refused', () => {
+  state.routines = [{ name: 'R', steps: [{ name: 's', work_s: 5, rest_s: -1, art: null }] }];
+  assert.match(problem(), /Rest time must be between/);
 });

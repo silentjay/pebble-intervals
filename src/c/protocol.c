@@ -126,7 +126,7 @@ static void prv_inbox(DictionaryIterator *iter, void *context) {
     Tuple *len_t = dict_find(iter, MESSAGE_KEY_PayloadLen);
     Tuple *chunk_t = dict_find(iter, MESSAGE_KEY_Chunk);
     if (!index_t || !count_t || !len_t || !chunk_t) return;
-    if (count_t->value->uint8 > MAX_CHUNKS) return;
+    if (count_t->value->uint8 == 0 || count_t->value->uint8 > MAX_CHUNKS) return;
     if (len_t->value->uint16 > MAX_BLOB) return;
 
     if (index_t->value->uint8 == 0) {
@@ -159,6 +159,7 @@ static void prv_inbox(DictionaryIterator *iter, void *context) {
     Tuple *count_t = dict_find(iter, MESSAGE_KEY_ChunkCount);
     Tuple *chunk_t = dict_find(iter, MESSAGE_KEY_Chunk);
     if (!rid_t || !step_t || !index_t || !count_t || !chunk_t) return;
+    if (count_t->value->uint8 == 0) return;
     if (!s_art_active || rid_t->value->uint8 != s_art_routine || step_t->value->uint8 != s_art_step) return;
 
     if (index_t->value->uint8 == 0) {
@@ -185,11 +186,16 @@ void protocol_set_commit_callback(void (*cb)(void)) {
   s_commit_cb = cb;
 }
 
+static void prv_inbox_dropped(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_WARNING, "appmessage dropped: %d", (int)reason);
+}
+
 void protocol_init(void) {
   s_blob_len = 0;
   s_blob_count = 0;
   s_blob_seen = 0;
   s_art_active = false;
   app_message_register_inbox_received(prv_inbox);
+  app_message_register_inbox_dropped(prv_inbox_dropped);
   app_message_open(app_message_inbox_size_maximum(), 256);
 }
