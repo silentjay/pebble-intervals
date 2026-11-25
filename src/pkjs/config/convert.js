@@ -61,5 +61,49 @@
     return out;
   }
 
-  return { packThreshold, fitRect, rleEncode, rleDecode, toHex, fromHex };
+  function utf8(str) {
+    return new TextEncoder().encode(str);
+  }
+
+  function truncateUtf8(str, max) {
+    const bytes = utf8(str);
+    if (bytes.length <= max) return bytes;
+    let n = max;
+    while (n > 0 && (bytes[n] & 0xc0) === 0x80) n--;
+    return bytes.slice(0, n);
+  }
+
+  // Same layout as src/c/store.c: u8 count, then per routine
+  // u8 steps, name, then per step name, u16 work, u16 rest, u8 flags.
+  function encodeRoutineSet(routines) {
+    if (routines.length > 8) throw new Error('too many routines');
+    const out = [routines.length];
+    for (const routine of routines) {
+      if (routine.steps.length > 15) throw new Error('too many steps');
+      out.push(routine.steps.length);
+      pushName(out, routine.name);
+      for (const step of routine.steps) {
+        pushName(out, step.name);
+        pushU16(out, step.work_s);
+        pushU16(out, step.rest_s);
+        out.push(step.has_art ? 1 : 0);
+      }
+    }
+    return Uint8Array.from(out);
+  }
+
+  function pushName(out, name) {
+    const bytes = truncateUtf8(name, 20);
+    out.push(bytes.length);
+    for (const b of bytes) out.push(b);
+  }
+
+  function pushU16(out, value) {
+    if (!(value >= 0 && value <= 65535)) throw new Error('duration out of range');
+    out.push(value & 0xff, (value >> 8) & 0xff);
+  }
+
+  return {
+    packThreshold, fitRect, rleEncode, rleDecode, toHex, fromHex, encodeRoutineSet,
+  };
 });
