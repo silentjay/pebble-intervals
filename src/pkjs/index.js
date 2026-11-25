@@ -1,7 +1,7 @@
 // Runs inside the Pebble app. Owns the routine/art data and serves the watch.
 var Convert = require('./convert');
 
-var CONFIG_URL = 'https://example.com/pebble-intervals/';
+var CONFIG_URL = 'https://REPLACE-ME.github.io/pebble-intervals/config/index.html';
 var ROUTINES_KEY = 'intervals.routines';
 var ART_KEY = 'intervals.art';
 var ROUTINE_CHUNK = 128;

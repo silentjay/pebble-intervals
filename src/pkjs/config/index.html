@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Intervals</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 12px 12px 80px; background: #f7f7f5; color: #111; }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    header { position: sticky; top: 0; background: #f7f7f5; padding: 8px 0; display: flex; align-items: center; gap: 12px; z-index: 2; }
+    header h1 { flex: 1; margin: 0; }
+    button { font: inherit; padding: 8px 12px; border-radius: 6px; border: 1px solid #bbb; background: #fff; }
+    button.primary { background: #111; color: #fff; border-color: #111; }
+    button.small { padding: 2px 8px; font-size: 13px; }
+    .routine { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+    .routine input[type=text] { width: 100%; }
+    .step { border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px; }
+    .step .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .step .row input[type=text] { flex: 1 1 140px; }
+    .step input[type=number] { width: 64px; }
+    .step canvas { image-rendering: pixelated; border: 1px solid #ccc; width: 144px; height: 168px; }
+    .art { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+    .art label { font-size: 12px; color: #666; }
+    .msg { font-size: 14px; padding: 8px; border-radius: 6px; }
+    .msg.error { background: #fde8e8; color: #911; }
+    .msg.ok { background: #e6f4ea; color: #14532d; }
+    .hint { font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Intervals</h1>
+    <button id="add-routine">Add routine</button>
+    <button id="save" class="primary">Save to watch</button>
+  </header>
+  <main id="app"></main>
+  <p id="msg" class="msg" hidden></p>
+  <p class="hint">Pictures show exactly what the watch will draw: 72×84, black and white. The watch needs the phone nearby when you start a pictured routine.</p>
+
+  <script src="../convert.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
