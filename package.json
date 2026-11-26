@@ -2,15 +2,21 @@
   "name": "pebble-intervals",
   "author": "John",
   "version": "1.0.0",
-  "keywords": ["pebble-app"],
+  "keywords": [
+    "pebble-app"
+  ],
   "private": true,
   "dependencies": {},
   "pebble": {
     "displayName": "Intervals",
     "uuid": "3f6f0d0e-7f3a-4c0f-9a2e-6c1b0a5d4e21",
     "sdkVersion": "3",
-    "targetPlatforms": ["diorite"],
-    "capabilities": ["configurable"],
+    "targetPlatforms": [
+      "diorite"
+    ],
+    "capabilities": [
+      "configurable"
+    ],
     "messageKeys": [
       "Cmd",
       "RoutineId",
@@ -19,6 +25,7 @@
       "ChunkCount",
       "PayloadLen",
       "Chunk"
-    ]
+    ],
+    "enableMultiJS": true
   }
 }

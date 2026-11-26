@@ -63,10 +63,10 @@ static void prv_menu_build(Window *window) {
 
   s_routine_count = store_load_all(s_routines, MAX_ROUTINES);
   if (s_routine_count == 0) {
-    s_empty_text = text_layer_create(GRect(4, 50, bounds.size.w - 8, 70));
+    s_empty_text = text_layer_create(GRect(4, 40, bounds.size.w - 8, 90));
     text_layer_set_text(s_empty_text, "No routines.\nConfigure in the Pebble app.");
     text_layer_set_text_alignment(s_empty_text, GTextAlignmentCenter);
-    text_layer_set_font(s_empty_text, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+    text_layer_set_font(s_empty_text, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
     layer_add_child(root, text_layer_get_layer(s_empty_text));
     return;
   }
@@ -226,7 +226,7 @@ static void prv_session_update(void) {
   text_layer_set_text(s_time_text, s_time_buf);
 
   GBitmap *pic = NULL;
-  GRect frame = GRect(36, 36, ART_W, ART_H);
+  GRect frame = GRect(36, 38, ART_W, ART_H);
 
   if (s_session.paused) {
     text_layer_set_text(s_phase_text, "PAUSED");
@@ -313,16 +313,16 @@ static void prv_session_load(Window *window) {
   text_layer_set_text_alignment(s_phase_text, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(s_phase_text));
 
-  s_name_text = text_layer_create(GRect(0, 16, bounds.size.w, 18));
-  text_layer_set_font(s_name_text, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  s_name_text = text_layer_create(GRect(0, 14, bounds.size.w, 24));
+  text_layer_set_font(s_name_text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   text_layer_set_text_alignment(s_name_text, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(s_name_text));
 
-  s_pic_layer = bitmap_layer_create(GRect(36, 36, ART_W, ART_H));
+  s_pic_layer = bitmap_layer_create(GRect(36, 38, ART_W, ART_H));
   bitmap_layer_set_background_color(s_pic_layer, GColorWhite);
   layer_add_child(root, bitmap_layer_get_layer(s_pic_layer));
 
-  s_time_text = text_layer_create(GRect(0, 120, bounds.size.w, 44));
+  s_time_text = text_layer_create(GRect(0, 122, bounds.size.w, 44));
   text_layer_set_font(s_time_text, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(s_time_text, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(s_time_text));

@@ -110,6 +110,7 @@ function createService(pebble, storage) {
 }
 
 if (typeof Pebble !== 'undefined' && Pebble.addEventListener) {
+  console.log('intervals: pkjs loaded');
   var service = createService(Pebble, localStorage);
   Pebble.addEventListener('showConfiguration', function () {
     Pebble.openURL(CONFIG_URL + '?return_to=' + encodeURIComponent('pebblejs://close#'));
